@@ -1,4 +1,7 @@
-use std::net::TcpStream;
+use std::{
+    io::{Read, Write},
+    net::TcpStream,
+};
 
 struct UrlComponents {
     protocol: String,
@@ -15,13 +18,40 @@ struct Request {
 }
 
 impl Request {
-    fn new(url: UrlComponents) -> Request {
-        Request {
-            url,
-            method: "".to_string(),
-            headers: Vec::new(),
-            body: "".to_string(),
+    fn send(&self) -> Result<String, std::io::Error> {
+        let req = self.create();
+
+        println!("Request: {}", req);
+
+        match TcpStream::connect(&self.url.socket_addr) {
+            Ok(mut stream) => {
+                stream.write_all(req.as_bytes())?;
+                stream.flush()?;
+
+                let mut response = String::new();
+                let _ = stream.read_to_string(&mut response);
+
+                Ok(response)
+            }
+            Err(e) => panic!("{:?}", e),
         }
+    }
+
+    fn create(&self) -> String {
+        let mut request = format!(
+            "{} /{} {}\r\nHost: {}\r\n",
+            self.method, self.url.pathname, self.url.protocol, self.url.hostname
+        );
+
+        for (k, v) in &self.headers {
+            request.push_str(&format!("{}: {}\r\n", k, v));
+        }
+
+        if !self.body.is_empty() {
+            request.push_str(&self.body);
+        }
+
+        request
     }
 }
 
@@ -42,20 +72,24 @@ fn parse_url(url: &str) -> UrlComponents {
     }
 }
 
-fn open_stream(socket_addr: &str) -> TcpStream {
-    match TcpStream::connect(socket_addr) {
-        Ok(stream) => {
-            println!("connected!");
-            stream
-        }
-        Err(e) => panic!("{:?}", e),
-    }
-}
-
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let url = parse_url("https://eu.httpbin.org/get");
 
-    let _stream = open_stream(&url.socket_addr);
+    let request = Request {
+        url,
+        method: "GET".to_string(),
+        headers: vec![
+            ("User-Agent".to_string(), "RustHttpClient/1.0".to_string()),
+            ("Accept".to_string(), "*/*".to_string()),
+            ("Connection".to_string(), "close".to_string()),
+        ],
+        body: String::new(),
+    };
 
-    let request = Request::new(url);
+    match request.send() {
+        Ok(response) => println!("Response:\n{}", response),
+        Err(e) => eprintln!("Error: {}", e),
+    }
+
+    Ok(())
 }

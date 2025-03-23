@@ -51,6 +51,19 @@ impl HttpExchange {
             ))
         }
     }
+
+    pub fn pprint_request(&self) {
+        for line in self.request.to_string().lines() {
+            println!("> {}", line);
+        }
+    }
+
+    pub fn pprint_response_header(&self) {
+        for line in self.response.headers.lines() {
+            println!("< {}", line)
+        }
+        println!("<")
+    }
 }
 
 fn parse_response(response: &str) -> Response {

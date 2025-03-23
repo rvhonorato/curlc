@@ -14,6 +14,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = command!()
         .arg(Arg::new("url_input").required(true).help("help goes here"))
         .arg(
+            Arg::new("method")
+                .short('X')
+                .action(ArgAction::Set)
+                .default_value("GET"),
+        )
+        .arg(
             Arg::new("verbose")
                 .short('v')
                 .long("verbose")
@@ -22,28 +28,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .get_matches();
 
+    // Parse arguments
     let url_input = matches.get_one::<String>("url_input").unwrap();
-    let url = parse_url(url_input);
-
+    let method = matches.get_one::<String>("method").unwrap();
     let verbose = matches.get_flag("verbose");
 
-    let request = Request::new("GET", url);
+    // Parse URL
+    let url = parse_url(url_input);
+    let request = Request::new(method, url);
 
+    // Setup exchange
     let mut http_exchange = HttpExchange::new(request);
 
+    // Send
     http_exchange.send()?;
 
     if verbose {
-        for line in http_exchange.request.to_string().lines() {
-            println!("> {}", line);
-        }
+        http_exchange.pprint_request();
+        http_exchange.pprint_response_header();
     }
-    if verbose {
-        for line in http_exchange.response.headers.lines() {
-            println!("< {}", line)
-        }
-        println!("<")
-    }
+
+    // Print body
     println!("{}", http_exchange.response.body);
 
     Ok(())

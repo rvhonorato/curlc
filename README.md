@@ -7,7 +7,7 @@ From [codingchallenges.fyi](https://codingchallenges.fyi/challenges/challenge-cu
 - [x] (Step 3) Hide headers behind verbose option
 - [x] (Step 4) Add option to change method
 - [x] (Step 5) Add support for POST
-- [ ] (Step 6) Add support for PUT
+- [x] (Step 6) Add support for PUT
 - [ ] (Step 7) Add support for HEAD and PATCH
 - [ ] (Step 8) Add `keep_alive`
 - [ ] (Step 9) Support HTTPS

@@ -7,6 +7,7 @@ use std::{
     time::Duration,
 };
 
+#[derive(Debug)]
 pub struct HttpExchange {
     socket_addr: String,
     pub request: Request,

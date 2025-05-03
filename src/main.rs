@@ -20,6 +20,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .default_value("GET"),
         )
         .arg(
+            Arg::new("data")
+                .short('d')
+                .action(ArgAction::Set)
+                .default_value(""),
+        )
+        .arg(
+            Arg::new("content-type")
+                .short('H')
+                .action(ArgAction::Set)
+                .default_value(""),
+        )
+        .arg(
             Arg::new("verbose")
                 .short('v')
                 .long("verbose")
@@ -32,10 +44,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let url_input = matches.get_one::<String>("url_input").unwrap();
     let method = matches.get_one::<String>("method").unwrap();
     let verbose = matches.get_flag("verbose");
+    let content_type = matches.get_one::<String>("content-type").unwrap();
+    let data = matches.get_one::<String>("data").unwrap();
 
     // Parse URL
     let url = parse_url(url_input);
-    let request = Request::new(method, url);
+    let request = Request::new(method, url, data, content_type);
 
     // Setup exchange
     let mut http_exchange = HttpExchange::new(request);

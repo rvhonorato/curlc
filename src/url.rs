@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct UrlComponents {
     pub protocol: String,
     pub hostname: String,
